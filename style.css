@@ -1,3 +1,24 @@
+:root {
+    --bg-color: #f2d061;
+    --bg-grad-start: #fff275;
+    --bg-grad-end: #ffcc00;
+    --text-cyan: #5ccce5;
+    --pink-shadow: #ff26d0;
+    --pink-menu: #ff43c4;
+    --pink-accent: #ff3399;
+    --cyan-bg: #7df9ff;
+    --dialogue-bg: rgba(255, 255, 255, 0.94);
+    --dialogue-text: #222222;
+    --panel-bg: #ffffff;
+    --panel-text: #111111;
+    --story-bg-fallback: #ffe6f2;
+    --dim-overlay: rgba(0, 0, 0, 0.45);
+    --white: #fff;
+    --white-pure: #ffffff;
+    --acc-hover-text: #ffdf77;
+
+}
+
 /* GLOBAL SETUP */
 * {
     margin: 0;
@@ -7,17 +28,19 @@
 
 body {
     /* global */
-    background-color: #f2d061;
-    color: #5ccce5;
+    background-color: var(--bg-color);
+    color: var(--text-cyan);
     font-family: 'Courier New', Courier, monospace;
     overflow: hidden; /* Prevents scrolling */
 
     background-image:
-    url('data:image/svg+xml;utf8,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><polygon points="30,20 80,50 30,80" fill="none" stroke="%23ffffff" stroke-opacity="0.3" stroke-width="4" stroke-linejoin="round"/></svg>'),
-    linear-gradient(135deg, #fff275 0%, #ffcc00 100%);
+
+    /* triangle */
+    url('data:image/svg+xml;utf8,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><polygon points="10,100 0,0 00,20" fill="none" stroke="%23ffffff" stroke-opacity="0.25" stroke-width="3" stroke-linejoin="round"/></svg>'),
+    linear-gradient(135deg, var(--bg-grad-start) 0%, var(--bg-grad-end) 100%);
     background-size: 100px 100px, 100% 100%;
     background-attachment: fixed;
-    animation: movePattern 4s linear infinite;
+    animation: movePattern 9s linear infinite;
 }
 
 /* background triangle animation*/
@@ -51,7 +74,7 @@ body:has(.main-menu:target:not(#main), .vn-screen:target, .vn-overlay:target, .t
     font-size: 4rem;
     letter-spacing: 0.3rem;
     margin-bottom: 3rem;
-    text-shadow: 2px 2px 1px #ff26d0; 
+    text-shadow: 2px 2px 1px var(--pink-shadow); 
 }
 
 .main-menu-list ul {
@@ -60,18 +83,18 @@ body:has(.main-menu:target:not(#main), .vn-screen:target, .vn-overlay:target, .t
 
 .main-menu-list a {
     text-decoration: none;
-    color: #ff43c4;
+    color: var(--pink-menu);
     font-size: 2rem;
     display: block;
     margin: 1.5rem 0; /* Vertical spacing between menu items */
     position: relative;
     transition: color 0.1s;
-    border: 2px solid #ff43c4;
+    border: 2px solid var(--pink-menu);
     width: 320px;
 }
 
 /* main menu list hover state */
-.main-menu-list a:hover {color: #fff;}
+.main-menu-list a:hover {color: var(--white);}
 
 .main-menu-list a::before {
     content: '- ';
@@ -100,7 +123,7 @@ body:has(.main-menu:target:not(#main), .vn-screen:target, .vn-overlay:target, .t
     position: fixed;
     inset: 0;
     z-index: 1;
-    background-color: #ffe6f2;
+    background-color: var(--story-bg-fallback);
     background-image: var(--scene-bg, url('images/dokidoki.webp'));
     background-size: cover;
     background-position: center;
@@ -115,7 +138,7 @@ body:has(.in-adventure:target) .story-background {
     content: "";
     position: absolute;
     inset: 0;
-    background-color: rgba(0, 0, 0, 0.45);
+    background-color: var(--dim-overlay);
     opacity: 0;
     z-index: 2;
     transition: opacity 0.25s ease;
@@ -162,18 +185,18 @@ body:has(.vn-screen:target, .vn-overlay:target) #main {
     right: 30px;
     z-index: 30;
     text-decoration: none;
-    background-color: #7df9ff;
-    color: #ff3399;
-    border: 3px solid #ff3399;
+    background-color: var(--cyan-bg);
+    color: var(--pink-accent);
+    border: 3px solid var(--pink-accent);
     padding: 8px 16px;
     font-weight: bold;
     font-size: 1.1rem;
-    box-shadow: 4px 4px 0px #ff3399;
+    box-shadow: 4px 4px 0px var(--pink-accent);
 }
 
 .vn-skip:hover {
-    background-color: #ff3399;
-    color: #ffffff;
+    background-color: var(--pink-accent);
+    color: var(--white-pure);
 }
 
 /* 3. CHARACTER SPRITE */
@@ -205,11 +228,11 @@ body:has(.vn-screen:target, .vn-overlay:target) #main {
     margin-bottom: 35px;
     padding: 32px 30px 25px 30px;
 
-    background-color: rgba(255, 255, 255, 0.94);
-    color: #222222;
-    border: 4px solid #ff3399;
+    background-color: var(--dialogue-bg);
+    color: var(--dialogue-text);
+    border: 4px solid var(--pink-accent);
     border-radius: 12px;
-    box-shadow: 8px 8px 0px #ff3399;
+    box-shadow: 8px 8px 0px var(--pink-accent);
 }
 
 /* Nameplate overlapping the top-left border */
@@ -217,14 +240,14 @@ body:has(.vn-screen:target, .vn-overlay:target) #main {
     position: absolute;
     top: -22px;
     left: 25px;
-    background-color: #7df9ff;
-    color: #ff3399;
-    border: 3px solid #ff3399;
+    background-color: var(--cyan-bg);
+    color: var(--pink-accent);
+    border: 3px solid var(--pink-accent);
     border-radius: 8px;
     padding: 4px 18px;
     font-size: 1.3rem;
     font-weight: bold;
-    box-shadow: 3px 3px 0px #ff3399;
+    box-shadow: 3px 3px 0px var(--pink-accent);
 }
 
 .vn-text {
@@ -238,7 +261,7 @@ body:has(.vn-screen:target, .vn-overlay:target) #main {
     position: absolute;
     bottom: 12px;
     right: 20px;
-    color: #ff3399;
+    color: var(--pink-accent);
     font-size: 1.2rem;
     animation: bounceArrow 0.8s infinite alternate;
 }
@@ -255,14 +278,14 @@ body:has(.vn-screen:target, .vn-overlay:target) #main {
 .select-topic-list a{
     padding: 10px 2px;
     text-decoration: none;
-    background-color: #ff43c4;
-    color: #fff;
+    background-color: var(--pink-menu);
+    color: var(--white);
     font-size: 2rem;
     display: block;
     margin: 1rem 0; /* Vertical spacing between menu items */
     position: relative;
     transition: color 0.1s;
-    border: 3px solid #5ccce5;
+    border: 3px solid var(--text-cyan);
     border-radius: 15px;
 }
 
@@ -275,8 +298,8 @@ body:has(.vn-screen:target, .vn-overlay:target) #main {
     margin: 20px 0;
 }
 
-.select-topic-list a:hover {background-color: #fff;
-    color:#ff26d0
+.select-topic-list a:hover {background-color: var(--white);
+    color:var(--pink-shadow)
 }
 
 .footer-text {
@@ -300,6 +323,11 @@ body:has(.vn-screen:target, .vn-overlay:target) #main {
 .teach-menu:target { display: flex; }    /* Show the screen if its ID matches the #target in the URL */
 /* Centers the static panel (and optional Back button) in the middle of the screen */
 
+.teach-title {
+    font-size: 3rem;
+    text-shadow: 2px 2px 1px var(--pink-shadow);
+}
+
 #math-panel,
 #physics-panel {
     width: 100%;
@@ -315,10 +343,10 @@ body:has(.vn-screen:target, .vn-overlay:target) #main {
     
     display: flex;
     flex-direction: column;
-    background-color: #ffffff;
-    color: #111111;
-    border: 4px solid #ff3399;
-    box-shadow: 8px 8px 0px #ff3399;
+    background-color: var(--panel-bg);
+    color: var(--panel-text);
+    border: 4px solid var(--pink-accent);
+    box-shadow: 8px 8px 0px var(--pink-accent);
 }
 
 /* Pinned top bar */
@@ -327,10 +355,10 @@ body:has(.vn-screen:target, .vn-overlay:target) #main {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: #7df9ff;
-    color: #ff3399;
+    background-color: var(--cyan-bg);
+    color: var(--pink-accent);
     padding: 12px 18px;
-    border-bottom: 3px solid #ff3399;
+    border-bottom: 3px solid var(--pink-accent);
     font-weight: bold;
 }
 
@@ -344,7 +372,7 @@ body:has(.vn-screen:target, .vn-overlay:target) #main {
     
     /* Custom scrollbar colors (Firefox) */
     scrollbar-width: thin;
-    scrollbar-color: #ff3399 #7df9ff;
+    scrollbar-color: var(--pink-accent) var(--cyan-bg);
 }
 
 .panel-scroll-area p {
@@ -357,12 +385,12 @@ body:has(.vn-screen:target, .vn-overlay:target) #main {
 }
 
 .panel-scroll-area::-webkit-scrollbar-track {
-    background: #7df9ff;
+    background: var(--cyan-bg);
 }
 
 .panel-scroll-area::-webkit-scrollbar-thumb {
-    background: #ff3399;
-    border: 2px solid #7df9ff;
+    background: var(--pink-accent);
+    border: 2px solid var(--cyan-bg);
 }
 
 .teach-navigation ul {
@@ -373,19 +401,19 @@ body:has(.vn-screen:target, .vn-overlay:target) #main {
 
 .teach-navigation a {
     text-decoration: none;
-    background-color: #7df9ff;
-    color: #ff3399;
-    border: 3px solid #ff3399;
+    background-color: var(--cyan-bg);
+    color: var(--pink-accent);
+    border: 3px solid var(--pink-accent);
     padding: 10px 20px;
     font-size: 1.2rem;
     font-weight: bold;
-    box-shadow: 4px 4px 0px #ff3399;
+    box-shadow: 4px 4px 0px var(--pink-accent);
     display: block;
 }
 
 .teach-navigation a:hover {
-    background-color: #ff3399;
-    color: #ffffff;
+    background-color: var(--pink-accent);
+    color: var(--white-pure);
 }
 
 
@@ -410,9 +438,9 @@ body:has(.vn-screen:target, .vn-overlay:target) #main {
 /* acc button */
 .acc-trigger {
     /* nanti ganti custom image */
-    background-color: #7df9ff;
-    color: #ff3399;
-    border: 3px solid #ff3399;
+    background-color: var(--cyan-bg);
+    color: var(--pink-accent);
+    border: 3px solid var(--pink-accent);
     border-radius: 40px;
     padding: 10px 16px;
     font-size: 1rem;
@@ -424,8 +452,8 @@ body:has(.vn-screen:target, .vn-overlay:target) #main {
 
 /* acc button animation */
 .acc-trigger:hover {
-    background-color: #ff3399;
-    color: #ffdf77;
+    background-color: var(--pink-accent);
+    color: var(--acc-hover-text);
     transform: translateY(-4px);
 }
 
@@ -434,12 +462,12 @@ body:has(.vn-screen:target, .vn-overlay:target) #main {
     display: none; /* Hidden by default */
     flex-direction: column;
     gap: 12px;
-    background-color: #ffffff;
-    color: #111111;
-    border: 3px solid #ff3399;
+    background-color: var(--panel-bg);
+    color: var(--panel-text);
+    border: 3px solid var(--pink-accent);
     padding: 16px;
     min-width: 210px;
-    box-shadow: 4px 4px 0px #ff3399; /* Retro indie drop-shadow */
+    box-shadow: 4px 4px 0px var(--pink-accent); /* Retro indie drop-shadow */
 }
 
 /* Reveals the panel when the trigger checkbox is checked */
@@ -458,7 +486,7 @@ body:has(.vn-screen:target, .vn-overlay:target) #main {
 .acc-option input {
     width: 18px;
     height: 18px;
-    accent-color: #ff3399; /* Colors the checkbox pink */
+    accent-color: var(--pink-accent); /* Colors the checkbox pink */
     cursor: pointer;
 }
 
@@ -472,11 +500,23 @@ body:has(#opt-1:checked) {
 
 /* effect 2 */
 body:has(#opt-2:checked) {
-    color: #ffffff;
+    color: var(--white-pure);
 }
 
 /* effect 3 */
 body:has(#opt-3:checked) {
-    background: #000000;
-    filter: none;
+    --bg-color: #161320;
+    --bg-grad-start: #231d33;
+    --bg-grad-end: #100d18;
+    --text-cyan: #7df9ff;
+    --pink-shadow: #ff26d0;
+    --pink-menu: #ff55cc;
+    --pink-accent: #ff4da6;
+    --cyan-bg: #1e2a38;
+    --dialogue-bg: rgba(24, 20, 36, 0.94);
+    --dialogue-text: #f2f2f2;
+    --panel-bg: #1a1626;
+    --panel-text: #f0f0f0;
+    --story-bg-fallback: #1a1626;
+    --dim-overlay: rgba(0, 0, 0, 0.65);
 }

@@ -17,6 +17,9 @@ Assets
 - [ ] Character Assets
 
 Accessibility Menu
-- [ ] Dark mode
+- [o] Dark mode
 - [ ] mute music button
 - [ ]
+ 
+Gameplay
+- [ ] thumbs up to check camera before start

@@ -16,6 +16,7 @@ body {
     url('data:image/svg+xml;utf8,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><polygon points="30,20 80,50 30,80" fill="none" stroke="%23ffffff" stroke-opacity="0.3" stroke-width="4" stroke-linejoin="round"/></svg>'),
     linear-gradient(135deg, #fff275 0%, #ffcc00 100%);
     background-size: 100px 100px, 100% 100%;
+    background-attachment: fixed;
     animation: movePattern 4s linear infinite;
 }
 
@@ -27,7 +28,9 @@ body {
 
 /* MAIN MENU LAYOUT (Hidden by Default) */
 .main-menu {
-    display: none; /* Hides all screens initially */
+    display: none; /* Hides all initially */
+    position: relative;
+    z-index: 10;
     height: 100vh;
     width: 100vw;
     
@@ -40,21 +43,15 @@ body {
     padding-top: 50px;
 }
 
-/* Show the screen if its ID matches the #target in the URL */
-.main-menu:target { display: flex; }
+.main-menu:target { display: flex; }    /* Show the screen if its ID matches the #target in the URL */
+#main { display: flex; }               /* make #main default */
+body:has(.main-menu:target:not(#main), .vn-screen:target, .vn-overlay:target, .teach-menu:target) #main { display: none; } /* Hide #main when other # */
 
-/* Default state: Show #main if there is no #target in the URL yet */
-#main { display: flex; }
-
-/* Hide #main if any OTHER screen is currently targeted */
-body:has(.main-menu:target:not(#main)) #main { display: none; }
-
-/* TYPOGRAPHY AND SPACING */
 .game-title {
     font-size: 4rem;
     letter-spacing: 0.3rem;
     margin-bottom: 3rem;
-    text-shadow: 2px 2px 1px #ff26d0; /* Retro dropa shadow */
+    text-shadow: 2px 2px 1px #ff26d0; 
 }
 
 .main-menu-list ul {
@@ -76,12 +73,11 @@ body:has(.main-menu:target:not(#main)) #main { display: none; }
 /* main menu list hover state */
 .main-menu-list a:hover {color: #fff;}
 
-
 .main-menu-list a::before {
     content: '- ';
     opacity: 0;
     position: absolute;
-    left: -2rem; /* Positions the dash cleanly to the left */
+    left: -2rem; /*position*/
 }
 
 .main-menu-list a:hover::before {
@@ -98,6 +94,164 @@ body:has(.main-menu:target:not(#main)) #main { display: none; }
     align-items: flex-end;
     padding: 0 40px;
 }
+
+.story-background {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    background-color: #ffe6f2;
+    background-image: var(--scene-bg, url('images/dokidoki.webp'));
+    background-size: cover;
+    background-position: center;
+    pointer-events: none;
+}
+
+body:has(.in-adventure:target) .story-background {
+    display: flex;
+}
+
+.story-background::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.45);
+    opacity: 0;
+    z-index: 2;
+    transition: opacity 0.25s ease;
+}
+
+body:has(.dim-story:target) .story-background::after {
+    opacity: 1;
+}
+
+/* 1. FULL-SCREEN VISUAL NOVEL STAGE */
+.vn-screen,
+.vn-overlay {
+    display: none; /* Hidden until #intro-dialogue is targeted */
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 20;
+
+    /* Replace with your scene background image */
+    background-color: transparent;
+
+    flex-direction: column;
+    justify-content: flex-end; /* Pushes dialogue box to the bottom */
+    align-items: center;
+    cursor: pointer; /* Shows the player the screen is clickable */
+    user-select: none; /* Prevents accidental text highlighting when clicking fast */
+}
+
+/* Show when targeted in URL, and hide #main */
+.vn-screen:target,
+.vn-overlay:target {
+    display: flex;
+}
+
+body:has(.vn-screen:target, .vn-overlay:target) #main {
+    display: none;
+}
+
+/* 2. SKIP BUTTON */
+.vn-skip {
+    position: absolute;
+    top: 25px;
+    right: 30px;
+    z-index: 30;
+    text-decoration: none;
+    background-color: #7df9ff;
+    color: #ff3399;
+    border: 3px solid #ff3399;
+    padding: 8px 16px;
+    font-weight: bold;
+    font-size: 1.1rem;
+    box-shadow: 4px 4px 0px #ff3399;
+}
+
+.vn-skip:hover {
+    background-color: #ff3399;
+    color: #ffffff;
+}
+
+/* 3. CHARACTER SPRITE */
+.vn-character {
+    position: absolute;
+    bottom: 300px; /* Stands from the bottom of the screen behind the text box */
+    left: 50%;
+    transform: translateX(-50%);
+    height: 85vh; /* Adjust height so the character frames nicely */
+    z-index: 1;
+    pointer-events: none; /* Lets clicks pass straight through the image */
+    display: flex;
+    align-items: flex-end;
+}
+
+.vn-character img {
+    max-height: 100%;
+    width: auto;
+    object-fit: contain;
+}
+
+/* 4. DDLC-STYLE DIALOGUE BOX */
+.vn-dialogue-box {
+    position: relative;
+    z-index: 25;
+    width: 90%;
+    max-width: 850px;
+    min-height: 170px;
+    margin-bottom: 35px;
+    padding: 32px 30px 25px 30px;
+
+    background-color: rgba(255, 255, 255, 0.94);
+    color: #222222;
+    border: 4px solid #ff3399;
+    border-radius: 12px;
+    box-shadow: 8px 8px 0px #ff3399;
+}
+
+/* Nameplate overlapping the top-left border */
+.vn-name-tag {
+    position: absolute;
+    top: -22px;
+    left: 25px;
+    background-color: #7df9ff;
+    color: #ff3399;
+    border: 3px solid #ff3399;
+    border-radius: 8px;
+    padding: 4px 18px;
+    font-size: 1.3rem;
+    font-weight: bold;
+    box-shadow: 3px 3px 0px #ff3399;
+}
+
+.vn-text {
+    font-size: 1.35rem;
+    line-height: 1.6;
+    font-weight: bold;
+}
+
+/* Blinking arrow in the bottom-right of the text box */
+.vn-next-indicator {
+    position: absolute;
+    bottom: 12px;
+    right: 20px;
+    color: #ff3399;
+    font-size: 1.2rem;
+    animation: bounceArrow 0.8s infinite alternate;
+}
+
+@keyframes bounceArrow {
+    from { transform: translateY(0px); }
+    to   { transform: translateY(5px); }
+}
+
+
+
+
+/* start adventure select topic*/
 .select-topic-list a{
     padding: 10px 2px;
     text-decoration: none;
@@ -110,7 +264,6 @@ body:has(.main-menu:target:not(#main)) #main { display: none; }
     transition: color 0.1s;
     border: 3px solid #5ccce5;
     border-radius: 15px;
-    
 }
 
 .select-topic-list ul{
@@ -123,12 +276,118 @@ body:has(.main-menu:target:not(#main)) #main { display: none; }
 }
 
 .select-topic-list a:hover {background-color: #fff;
-color:#ff26d0
+    color:#ff26d0
 }
 
 .footer-text {
     font-size: 1.2rem;
 }
+
+
+.teach-menu {
+    position: relative;
+    z-index: 10;
+    height: 100vh;
+    width: 100vw;
+    display: none; /* Required for centering to work */
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    padding: 20px;
+}
+
+.teach-menu:target { display: flex; }    /* Show the screen if its ID matches the #target in the URL */
+/* Centers the static panel (and optional Back button) in the middle of the screen */
+
+#math-panel,
+#physics-panel {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+/* The static panel box */
+.center-panel {
+    width: 100%;
+    max-width: 550px; /* Controls panel width */
+    max-height: 60vh; /* Caps height at 60% of the screen so scrolling triggers */
+    
+    display: flex;
+    flex-direction: column;
+    background-color: #ffffff;
+    color: #111111;
+    border: 4px solid #ff3399;
+    box-shadow: 8px 8px 0px #ff3399;
+}
+
+/* Pinned top bar */
+.panel-title {
+    
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #7df9ff;
+    color: #ff3399;
+    padding: 12px 18px;
+    border-bottom: 3px solid #ff3399;
+    font-weight: bold;
+}
+
+/* Scrollable body inside the panel */
+.panel-scroll-area {
+    flex: 1;          /* Fills the remaining height inside .center-panel */
+    min-height: 0;    /* Ensures Flexbox allows the box to shrink and scroll */
+    padding: 20px;
+    overflow-y: auto; /* Adds the scrollbar automatically when content overflows */
+    line-height: 1.6;
+    
+    /* Custom scrollbar colors (Firefox) */
+    scrollbar-width: thin;
+    scrollbar-color: #ff3399 #7df9ff;
+}
+
+.panel-scroll-area p {
+    margin-bottom: 15px;
+}
+
+/* Custom scrollbar styling (Chrome, Edge, Safari) */
+.panel-scroll-area::-webkit-scrollbar {
+    width: 10px;
+}
+
+.panel-scroll-area::-webkit-scrollbar-track {
+    background: #7df9ff;
+}
+
+.panel-scroll-area::-webkit-scrollbar-thumb {
+    background: #ff3399;
+    border: 2px solid #7df9ff;
+}
+
+.teach-navigation ul {
+    list-style: none;
+    display: flex;
+    gap: 20px;
+}
+
+.teach-navigation a {
+    text-decoration: none;
+    background-color: #7df9ff;
+    color: #ff3399;
+    border: 3px solid #ff3399;
+    padding: 10px 20px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    box-shadow: 4px 4px 0px #ff3399;
+    display: block;
+}
+
+.teach-navigation a:hover {
+    background-color: #ff3399;
+    color: #ffffff;
+}
+
 
 /* Accessibility widget */
 .acc-widget {
@@ -206,7 +465,7 @@ color:#ff26d0
 /* accessibility options */
 
 /* effect 1 */
-body:has(#opt-1:checked)::before {
+body:has(#opt-1:checked) {
     animation: none;
     transform: none;
 }
@@ -217,7 +476,7 @@ body:has(#opt-2:checked) {
 }
 
 /* effect 3 */
-body:has(#opt-3:checked)::before {
+body:has(#opt-3:checked) {
     background: #000000;
     filter: none;
 }

@@ -133,19 +133,21 @@
     </main>
 
     <!-- OPTIONS MENU -->
-     <!-- todo list
-        => working audio options
-        => working music options
-        => accesable from main menu and when playing the game
-    
-    -->
-
     <main class="screen main-menu" id="options">
         <h1 class="game-title">OPTIONS</h1>
         <nav class="main-menu-list">
             <ul>
-                <li><a href="#">Audio: 100%</a></li>
-                <li><a href="#">Music: im mr beast.</a></li>
+                <li class="audio-control">
+                    <label for ="sfx-slider">sfx: <span id="sfx-value">100%</span></label>
+                    <input type="range" id="sfx-slider" min="0" max="100" value="100">
+                </li>
+                <li class="audio-control">
+                    <label for="bgm-slider">bgm: <span id="bgm-value">100%</span></label>
+                    <input type="range" id="bgm-slider" min="0" max="100" value="100">
+                </li>
+                <li>
+                    <button type="button" id="bgm-switch">Track : Main theme</button>
+                </li>
                 <li><a href="#main" id="options-back-btn">Back</a></li>
             </ul>
         </nav>
@@ -201,7 +203,157 @@
 
 <!-- script land -->
 
-<!-- dialogue script -->
+<!-- audio script -->
+<script>
+    const AudioManager = (() => {
+        // SFX HEREE 
+        const sfxFiles = {
+            click: "audio/click.mp3",
+            hover: "audio/hover.mp3",
+            blip:  "audio/blip.mp3",
+            start: "audio/click.mp3" 
+        };
+
+        // MUSIC HERE ANJAY
+        const bgmTracks = [
+            { key: "menu",    title: "Main Theme",    src: "audio/bgm-menu.mp3" },
+            { key: "mrbeast", title: "im mr beast.",  src: "audio/bgm-mrbeast.mp3" }
+        ];
+
+        // Load saved volumes from localStorage (defaults: SFX 100%, Music 50%)
+        let sfxVolume = parseFloat(localStorage.getItem("sfxVol") ?? "1.0");
+        let bgmVolume = parseFloat(localStorage.getItem("bgmVol") ?? "0.5");
+        let currentTrackIndex = 0;
+        let pendingTrack = null;
+
+        const bgmPlayer = new Audio();
+        bgmPlayer.loop = true;
+        bgmPlayer.volume = bgmVolume;
+
+        // Play any SFX (clones node so rapid clicks never cut off sound)
+        function playSFX(name) {
+            const src = sfxFiles[name];
+            if (!src || sfxVolume <= 0) return;
+
+            const sound = new Audio(src);
+            sound.volume = sfxVolume;
+            sound.play().catch(() => {}); // Safely ignores missing files
+        }
+
+        // Play or switch Background Music
+        function playBGM(index = currentTrackIndex) {
+            currentTrackIndex = index % bgmTracks.length;
+            const track = bgmTracks[currentTrackIndex];
+
+            if (!bgmPlayer.src.endsWith(track.src)) {
+                bgmPlayer.src = track.src;
+            }
+            bgmPlayer.volume = bgmVolume;
+
+            // Browsers block audio until the user's first click; queue if blocked
+            bgmPlayer.play().then(() => {
+                pendingTrack = null;
+            }).catch(() => {
+                pendingTrack = currentTrackIndex;
+            });
+
+            return track;
+        }
+
+        function nextBGM() {
+            return playBGM(currentTrackIndex + 1);
+        }
+
+        function setSFXVolume(percent) {
+            sfxVolume = Math.max(0, Math.min(1, percent / 100));
+            localStorage.setItem("sfxVol", sfxVolume);
+        }
+
+        function setBGMVolume(percent) {
+            bgmVolume = Math.max(0, Math.min(1, percent / 100));
+            bgmPlayer.volume = bgmVolume;
+            localStorage.setItem("bgmVol", bgmVolume);
+        }
+
+        // Unlock queued BGM on the player's very first interaction anywhere
+        ["pointerdown", "keydown"].forEach((evt) => {
+            document.addEventListener(evt, () => {
+                if (pendingTrack !== null) {
+                    playBGM(pendingTrack);
+                }
+            }, { once: true });
+        });
+
+        // 3. AUTOMATIC GLOBAL HOVER & CLICK SFX FOR ALL MENUS
+        const interactiveSelector = "a, button, .acc-trigger, .acc-item, [data-sfx]";
+        let lastHovered = null;
+
+        document.addEventListener("mouseover", (event) => {
+            const target = event.target.closest(interactiveSelector);
+            if (!target || target === lastHovered || target.hasAttribute("data-no-sfx")) return;
+            lastHovered = target;
+            playSFX(target.dataset.hoverSfx || "hover");
+        });
+
+        document.addEventListener("mouseout", (event) => {
+            if (lastHovered && !lastHovered.contains(event.relatedTarget)) {
+                lastHovered = null;
+            }
+        });
+
+        document.addEventListener("click", (event) => {
+            const target = event.target.closest(interactiveSelector);
+            if (!target || target.hasAttribute("data-no-sfx")) return;
+            playSFX(target.dataset.sfx || "click");
+        });
+
+        // 4. WIRE UP OPTIONS MENU CONTROLS
+        document.addEventListener("DOMContentLoaded", () => {
+            const sfxSlider   = document.getElementById("sfx-slider");
+            const sfxValue    = document.getElementById("sfx-value");
+            const bgmSlider   = document.getElementById("bgm-slider");
+            const bgmValue    = document.getElementById("bgm-value");
+            const bgmSwitch   = document.getElementById("bgm-switch-btn");
+
+            if (sfxSlider && sfxValue) {
+                sfxSlider.value = Math.round(sfxVolume * 100);
+                sfxValue.textContent = `${sfxSlider.value}%`;
+
+                sfxSlider.addEventListener("input", () => {
+                    sfxValue.textContent = `${sfxSlider.value}%`;
+                    setSFXVolume(sfxSlider.value);
+                });
+
+                // Plays a sample click when the user releases the slider
+                sfxSlider.addEventListener("change", () => playSFX("click"));
+            }
+
+            if (bgmSlider && bgmValue) {
+                bgmSlider.value = Math.round(bgmVolume * 100);
+                bgmValue.textContent = `${bgmSlider.value}%`;
+
+                bgmSlider.addEventListener("input", () => {
+                    bgmValue.textContent = `${bgmSlider.value}%`;
+                    setBGMVolume(bgmSlider.value);
+                });
+            }
+
+            if (bgmSwitch) {
+                bgmSwitch.addEventListener("click", () => {
+                const track = nextBGM();
+                bgmSwitch.textContent = `Track: ${track.title}`;
+            });
+}
+
+            // Start default BGM (will begin immediately on first click)
+            playBGM(0);
+        });
+
+        return { playSFX, playBGM, nextBGM, setSFXVolume, setBGMVolume };
+    })();
+</script>
+
+<!-- dialogue script and etc -->
 <script>
         document.addEventListener("DOMContentLoaded", () => {
             // 1. DEFINE ALL DIALOGUE SCENES HERE
@@ -211,18 +363,21 @@
                     lines: [
                         {
                             name: "me",
-                            sprite: "images/silentvoice.jpg",
+                            sprite:"images/pamanbuasfake.png",
+                            size: "40vh",
                             bg: "images/dokidoki.webp",
                             text: "What a beautifull morning today is."
                         },
                         {
                             name: "Paman Buas",
                             sprite: "images/silentvoice.jpg",
+                            size: "40vh",
                             text: "idk something about meeting a blind girl"
                         },
                         {
                             name: "Paman Buas",
-                            sprite: "images/silentvoice.jpg",
+                            sprite: "images/pamanbuasfake.png",
+                            size: "100vh",
                             text: "woah"
                         }
                     ]
@@ -247,7 +402,7 @@
             const accToggle      = document.getElementById("acc-toggle");
 
             // Runs right before the browser navigates to #options
-            // options back button thingy
+            // options back button thingy script
             document.querySelectorAll('a[href="#options"]').forEach((btn) => {
                 btn.addEventListener("click", () => {
                     // Grab the screen you are currently on (defaults to #main)
@@ -280,10 +435,15 @@
 
                 vnName.textContent = line.name;
                 vnText.textContent = line.text;
+                AudioManager.playSFX("blip");
 
                 // Update sprite if specified on this line
                 if (line.sprite && stageSprite) {
                     stageSprite.src = line.sprite;
+                }
+
+                if (stageEl) {
+               stageEl.style.setProperty("--sprite-height", line.size || "85vh");
                 }
 
                 // Update background image if specified on this line

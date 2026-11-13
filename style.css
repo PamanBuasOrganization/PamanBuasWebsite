@@ -81,12 +81,14 @@ body:has(.main-menu:target:not(#main), .vn-screen:target, .vn-overlay:target, .t
     list-style: none;
 }
 
-.main-menu-list a {
+.main-menu-list a,
+.main-menu-list button{
     text-decoration: none;
+    background: transparent;
     color: var(--pink-menu);
     font-size: 2rem;
     display: block;
-    margin: 1.5rem 0; /* Vertical spacing between menu items */
+    margin: 1.5rem 0; 
     position: relative;
     transition: color 0.1s;
     border: 2px solid var(--pink-menu);
@@ -94,16 +96,19 @@ body:has(.main-menu:target:not(#main), .vn-screen:target, .vn-overlay:target, .t
 }
 
 /* main menu list hover state */
-.main-menu-list a:hover {color: var(--white);}
+.main-menu-list a:hover,
+.main-menu-list button:hover{color: var(--white);}
 
-.main-menu-list a::before {
+.main-menu-list a::before,
+.main-menu-list button::before{
     content: '- ';
     opacity: 0;
     position: absolute;
     left: -2rem; /*position*/
 }
 
-.main-menu-list a:hover::before {
+.main-menu-list a:hover::before,
+.main-menu-list button:hover::before{
     opacity: 1;
 }
 
@@ -206,18 +211,20 @@ body:has(.vn-screen:target, .vn-overlay:target) #main {
 /* 3. CHARACTER SPRITE */
 .vn-character {
     position: absolute;
-    bottom: 300px; /* Stands from the bottom of the screen behind the text box */
+    bottom: 300px;
     left: 50%;
     transform: translateX(-50%);
-    height: 85vh; /* Adjust height so the character frames nicely */
+    height: var(--sprite-height, 85vh); /* Adjust height so the character frames nicely */
+    max-width: 90vw;
     z-index: 1;
     pointer-events: none; /* Lets clicks pass straight through the image */
     display: flex;
     align-items: flex-end;
+    justify-content: center;
 }
 
 .vn-character img {
-    max-height: 100%;
+    height: 100%;
     width: auto;
     object-fit: contain;
 }
@@ -554,4 +561,49 @@ body:has(#opt-3:checked) {
     --panel-text: #f0f0f0;
     --story-bg-fallback: #1a1626;
     --dim-overlay: rgba(0, 0, 0, 0.65);
+}
+
+/* Audios */
+.audio-control {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    width: 320px;
+    margin: 1.5rem 0;
+    padding: 12px 16px;
+    border: 2px solid var(--pink-menu);
+    color: var(--pink-menu);
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.audio-control input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 10px;
+    background: var(--cyan-bg);
+    border: 2px solid var(--pink-accent);
+    outline: none;
+    cursor: pointer;
+}
+
+.audio-control input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    background: var(--pink-accent);
+    border: 2px solid var(--white-pure);
+    cursor: pointer;
+}
+
+.audio-control input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    background: var(--pink-accent);
+    border: 2px solid var(--white-pure);
+    border-radius: 0;
+    cursor: pointer;
 }

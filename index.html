@@ -10,40 +10,127 @@
 </head>
 <body>
 
+    <!-- story background -->
+    <div class="story-background" aria-hidden="true">
+        <div class="vn-character">
+            <img id="story-sprite" src="images/silentvoice.jpg" alt="Guide Character">
+        </div>
+    </div>
+
     <!-- MAIN MENU -->
-    <main class="main-menu" id="main">
+    <main class="screen main-menu" id="main">
         
         <!-- title -->
         <h1 class="game-title">Mist or beast</h1>
         <nav class="main-menu-list">
             <ul>
-                <!-- Clicking these updates the URL to end in #options or #load -->
-                <li><a href="#Start">Start Adventure</a></li>
+                <li><a href="#intro" data-dialogue="intro">Start Adventure</a></li>
                 <li><a href="#Options">Options</a></li>
                 <li><a href="#LearnMore">Learn More</a></li>
             </ul>
         </nav>
 
-        <!-- footer-->
         <footer class="main-menu-footer">
             <div class="footer-text">Paman Buas Foundation™ ©</div>
         </footer>
     </main>
 
+    <!-- Dialogue Overlay -->
+     <section class="screen in-adventure vn-overlay" id="intro">
+        <a href="#select-topic" id="vn-skip-btn" class="vn-skip">skip >></a>
 
-    <!-- START -->
-    <main class="main-menu" id="Start">
+        <div class="vn-dialogue-box">
+            <div class="vn-name-tag" id="vn-name">Paman Buas</div>
+            <p class="vn-text" id="vn-text">Thinking...</p>
+            <span class="vn-next-indicator">▼</span>
+        </div>
+    </section>
+
+
+    <!-- SELECT TOPIC -->
+    <main class="screen in-adventure dim-story main-menu" id="select-topic">
         <h1 class="game-title">MISTUH bis</h1>
-        <nav class="main-menu-list">
+        <nav class="select-topic-list">
             <ul>
-                <li><a href="#">Math</a></li>
-                <li><a href="#">Physics</a></li>
+                <li><a href="#math-teach">Math</a></li>
+                <li><a href="#physics-teach">Physics</a></li>
                 <li><a href="#">Electro (locked)</a></li>
                 <li><a href="#main">Back to Menu</a></li>
             </ul>
         </nav>
     </main>
 
+    <!-- MATH LESSON -->
+    <main class="screen in-adventure dim-story teach-menu" id="math-teach">
+        <h1 class="teach-title">meth</h1>
+
+        <!-- panel -->
+        <div id="math-panel">
+            <div class="center-panel">
+                <div class="panel-title">
+                    <h3>METH</h3>
+                </div>
+
+                <div class="panel-scroll-area">
+                    <p> eafaeafaefaef</p>
+                    <p> eafaeafaefaef</p>
+                    <p> eafaeafaefaef</p>
+                    <p> eafaeafaefaef</p>
+                    <p> eafaeafaefaef</p>
+                    <p> eafaeafaefaef</p>
+                    <p> eafaeafaefaef</p>
+                    <p> eafaeafaefaef</p>
+                    <p> eafaeafaefaef</p>
+                    <p> eafaeafaefaef</p>
+                    <p> eafaeafaefaef</p>
+                    <p> eafaeafaefaef</p>
+                    <p> eafaeafaefadfadfadfadfadfadfadfdafadfasdaef</p>
+                    <p> eafaeafaefaef</p>
+                    <p> eafaeafaefaef</p>
+                    <p> eafaeafaefaef</p>
+                    <p> eafaeafaefaef</p>
+                    <p> eafaeafaefaef</p>
+                    <p> eafaeafaefaef</p>
+                    <p> eafaeafaefaef</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- navigation -->
+        <nav class="teach-navigation">
+            <ul>
+                <li><a href="#main">Back to Menu</a></li>
+                
+            </ul>
+        </nav>
+    </main>
+    
+    <!-- PHYSICS LESSON -->
+    <main class="screen in-adventure dim-story teach-menu" id="physics-teach">
+        <h1 class="teach-title">Pisiks</h1>
+        
+        <!-- panel -->
+        <div id="physics-panel">
+            <div class="center-panel">
+                <div class="panel-title">
+                    <h3>PISIKS</h3>
+                </div>
+                
+                <div class="panel-scroll-area">
+                    <p> eafaeafaefaef</p>
+                    <p> eafaeafaefaef</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- navigation -->
+        <nav class="teach-navigation">
+            <ul>
+                <li><a href="#main">Back to Menu</a></li>
+
+            </ul>
+        </nav>
+    </main>
 
     <!-- OPTIONS MENU -->
      <!-- todo list
@@ -53,7 +140,7 @@
     
     -->
 
-    <main class="main-menu" id="Options">
+    <main class="screen main-menu" id="Options">
         <h1 class="game-title">OPTIONS</h1>
         <nav class="main-menu-list">
             <ul>
@@ -101,13 +188,132 @@
                 <span>option 2</span>
             </label>
             
-            <!-- option 3-->
+            <!-- dark mode -->
             <label class="acc-option">
                 <input type="checkbox" id="opt-3">
                 <span>option 3</span>
             </label>
         </div>
     </aside>
+
+
+<!-- script land -->
+
+<!-- dialogue script -->
+<script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // 1. DEFINE ALL DIALOGUE SCENES HERE
+            const dialogues = {
+                intro: {
+                    nextScreen: "#select-topic",
+                    lines: [
+                        {
+                            name: "me",
+                            sprite: "images/silentvoice.jpg",
+                            bg: "images/dokidoki.webp",
+                            text: "What a beautifull morning today is."
+                        },
+                        {
+                            name: "Paman Buas",
+                            sprite: "images/silentvoice.jpg",
+                            text: "idk something about meeting a blind girl"
+                        },
+                        {
+                            name: "Paman Buas",
+                            sprite: "images/silentvoice.jpg",
+                            text: "woah"
+                        }
+                    ]
+                }
+                // Add future dialogues here! Example:
+                // mathIntro: {
+                //     nextScreen: "#math-teach",
+                //     lines: [
+                //         { name: "Paman Buas", sprite: "images/silentvoice.jpg", text: "Time for math!" }
+                //     ]
+                // }
+            };
+
+            // 2. GRAB ELEMENTS
+            const stageEl     = document.querySelector(".story-background");
+            const stageSprite = document.getElementById("story-sprite");
+            const vnOverlay   = document.getElementById("intro");
+            const vnName      = document.getElementById("vn-name");
+            const vnText      = document.getElementById("vn-text");
+            const vnSkipBtn   = document.getElementById("vn-skip-btn");
+
+            let activeSceneKey = "intro";
+            let currentLine = 0;
+
+            function loadScene(sceneKey) {
+                activeSceneKey = dialogues[sceneKey] ? sceneKey : "intro";
+                currentLine = 0;
+                vnSkipBtn.href = dialogues[activeSceneKey].nextScreen;
+                showLine(0);
+            }
+
+            function showLine(index) {
+                const scene = dialogues[activeSceneKey];
+                const line = scene.lines[index];
+
+                vnName.textContent = line.name;
+                vnText.textContent = line.text;
+
+                // Update sprite if specified on this line
+                if (line.sprite && stageSprite) {
+                    stageSprite.src = line.sprite;
+                }
+
+                // Update background image if specified on this line
+                if (line.bg && stageEl) {
+                    stageEl.style.setProperty("--scene-bg", `url('${line.bg}')`);
+                }
+            }
+
+            function advanceDialogue() {
+                const scene = dialogues[activeSceneKey];
+                currentLine++;
+
+                if (currentLine < scene.lines.length) {
+                    showLine(currentLine);
+                } else {
+                    window.location.hash = scene.nextScreen;
+                }
+            }
+
+            // Initialize default scene
+            loadScene("intro");
+
+            // Listen for any link with data-dialogue="..."
+            document.querySelectorAll("[data-dialogue]").forEach((trigger) => {
+                trigger.addEventListener("click", () => {
+                    loadScene(trigger.dataset.dialogue);
+                });
+            });
+
+            // Click anywhere on the dialogue screen to continue
+            vnOverlay.addEventListener("click", (event) => {
+                if (event.target.closest(".vn-skip")) return;
+                advanceDialogue();
+            });
+
+            // Press Space or Enter during dialogue to continue
+            document.addEventListener("keydown", (event) => {
+                const isDialogueOpen = window.location.hash === "#intro";
+                if (isDialogueOpen && (event.key === " " || event.key === "Enter")) {
+                    event.preventDefault();
+                    advanceDialogue();
+                }
+            });
+
+            // Reset if user navigates back to #intro via browser history
+            window.addEventListener("hashchange", () => {
+                if (window.location.hash === "#intro") {
+                    showLine(currentLine);
+                }
+            });
+        });
+    </script>
 
 </body>
 </html>

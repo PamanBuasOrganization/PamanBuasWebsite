@@ -181,9 +181,10 @@ body:has(.vn-screen:target, .vn-overlay:target) #main {
 /* 2. SKIP BUTTON */
 .vn-skip {
     position: absolute;
-    top: 25px;
+    top: 20px;
     right: 30px;
     z-index: 30;
+    border-radius: 40px;
     text-decoration: none;
     background-color: var(--cyan-bg);
     color: var(--pink-accent);
@@ -191,12 +192,15 @@ body:has(.vn-screen:target, .vn-overlay:target) #main {
     padding: 8px 16px;
     font-weight: bold;
     font-size: 1.1rem;
-    box-shadow: 4px 4px 0px var(--pink-accent);
+    box-shadow: 2px 1px 0px var(--pink-accent);
+    transition: transform 0.15s ease, background-color 0.15s ease;
 }
 
 .vn-skip:hover {
     background-color: var(--pink-accent);
     color: var(--white-pure);
+    transform: translateY(-4px);
+    box-shadow: 2px 1px 5px var(--pink-accent); /*slight glow*/
 }
 
 /* 3. CHARACTER SPRITE */
@@ -420,11 +424,11 @@ body:has(.vn-screen:target, .vn-overlay:target) #main {
 /* Accessibility widget */
 .acc-widget {
     position: fixed;
-    bottom: 20px;    /* 20px from the bottom edge */
-    right: 20px;     /* 20px from the right edge */
+    top: 20px;    
+    left: 20px;  
     z-index: 100;    /* moves forward */
     display: flex;
-    flex-direction: column-reverse; /* Makes the pop-up panel open UPWARD above the button */
+    flex-direction: column; 
     align-items: flex-end;
     gap: 10px;
 }
@@ -442,51 +446,82 @@ body:has(.vn-screen:target, .vn-overlay:target) #main {
     color: var(--pink-accent);
     border: 3px solid var(--pink-accent);
     border-radius: 40px;
-    padding: 10px 16px;
+    padding: 9px 16px;
     font-size: 1rem;
     font-weight: bold;
     cursor: pointer;
-    user-select: none; /* Prevents accidental text highlighting when clicking */
+    user-select: none;
     transition: transform 0.15s ease, background-color 0.15s ease;
+    box-shadow:2px 1px 0px var(--pink-accent); 
 }
 
-/* acc button animation */
+/* acc button hover state */
 .acc-trigger:hover {
     background-color: var(--pink-accent);
     color: var(--acc-hover-text);
     transform: translateY(-4px);
+    box-shadow: 2px 1px 5px var(--pink-accent); /*slight glow*/
 }
 
 /* pop up panel */
 .acc-panel {
-    display: none; /* Hidden by default */
+    display: flex;
     flex-direction: column;
-    gap: 12px;
-    background-color: var(--panel-bg);
-    color: var(--panel-text);
-    border: 3px solid var(--pink-accent);
-    padding: 16px;
-    min-width: 210px;
-    box-shadow: 4px 4px 0px var(--pink-accent); /* Retro indie drop-shadow */
+    align-items: flex-end;
+    gap: 8px;
+    pointer-events: none;
 }
 
 /* Reveals the panel when the trigger checkbox is checked */
-#acc-toggle:checked ~ .acc-panel {display: flex;}
+#acc-toggle:checked ~ .acc-panel {pointer-events: auto;}
 
-.acc-option {
+.acc-item{
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap:10px;
+    min-width: 162px;
+    padding: 7px 16px;
+    background-color: var(--panel-bg);
+    color: var(--panel-text);
+    border: 3px solid var(--pink-accent);
+    border-radius: 40px;
+    box-shadow: 2px 1px 0px var(--pink-accent);
     font-size: 1rem;
     font-weight: bold;
+    text-decoration: none;
     cursor: pointer;
+
+    opacity: 0;
+    transform: translateY(-20px) scale(0.095);
+    transition:
+        opacity 0.25s ease,
+        transform 0.40s cubic-bezier(0.22, 1, 0.36, 1),
+        background-color 0.15s ease,
+        color 0.15s ease;
 }
+
+.acc-item:hover {
+    background-color: var(--cyan-bg);
+    color: var(--pink-accent);
+
+}
+
+/* cascade open states + staggered delays */
+#acc-toggle:checked ~ .acc-panel .acc-item {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+#acc-toggle:checked ~ .acc-panel .acc-item:nth-child(1) { transition-delay: 0.04s; }
+#acc-toggle:checked ~ .acc-panel .acc-item:nth-child(2) { transition-delay: 0.10s; }
+#acc-toggle:checked ~ .acc-panel .acc-item:nth-child(3) { transition-delay: 0.16s; }
+#acc-toggle:checked ~ .acc-panel .acc-item:nth-child(4) { transition-delay: 0.22s; }
 
 /* pop up options */
 .acc-option input {
     width: 18px;
     height: 18px;
-    accent-color: var(--pink-accent); /* Colors the checkbox pink */
+    accent-color: var(--pink-accent);
     cursor: pointer;
 }
 

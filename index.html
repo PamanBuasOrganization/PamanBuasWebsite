@@ -25,7 +25,7 @@
         <nav class="main-menu-list">
             <ul>
                 <li><a href="#intro" data-dialogue="intro">Start Adventure</a></li>
-                <li><a href="#Options">Options</a></li>
+                <li><a href="#options">Options</a></li>
                 <li><a href="#LearnMore">Learn More</a></li>
             </ul>
         </nav>
@@ -140,7 +140,7 @@
     
     -->
 
-    <main class="screen main-menu" id="Options">
+    <main class="screen main-menu" id="options">
         <h1 class="game-title">OPTIONS</h1>
         <nav class="main-menu-list">
             <ul>
@@ -236,13 +236,33 @@
                 // }
             };
 
-            // 2. GRAB ELEMENTS
+            // initialize
             const stageEl     = document.querySelector(".story-background");
             const stageSprite = document.getElementById("story-sprite");
             const vnOverlay   = document.getElementById("intro");
             const vnName      = document.getElementById("vn-name");
             const vnText      = document.getElementById("vn-text");
             const vnSkipBtn   = document.getElementById("vn-skip-btn");
+            const optionsBackBtn = document.getElementById("options-back-btn");
+            const accToggle      = document.getElementById("acc-toggle");
+
+            // Runs right before the browser navigates to #options
+            // options back button thingy
+            document.querySelectorAll('a[href="#options"]').forEach((btn) => {
+                btn.addEventListener("click", () => {
+                    // Grab the screen you are currently on (defaults to #main)
+                    const currentScreen = window.location.hash || "#main";
+
+                    if (currentScreen !== "#options" && optionsBackBtn) {
+                        optionsBackBtn.href = currentScreen;
+                    }
+
+                    // Automatically close the top-right Accessibility menu
+                    if (accToggle) {
+                        accToggle.checked = false;
+                    }
+                });
+            });
 
             let activeSceneKey = "intro";
             let currentLine = 0;

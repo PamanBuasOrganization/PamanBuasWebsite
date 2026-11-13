@@ -191,7 +191,7 @@
             </label>
             
             <!-- dark mode -->
-            <label class="acc-item acc-option">
+            <label data-sfx="crystal" class="acc-item acc-option">
                 <input type="checkbox" id="opt-3">
                 <span>Dark Mode</span>
             </label>
@@ -211,12 +211,13 @@
             click: "audio/click.mp3",
             hover: "audio/hover.mp3",
             blip:  "audio/blip.mp3",
-            start: "audio/click.mp3" 
+            start: "audio/click.mp3",
+            crystal: "audio/crystal_sfx.mp3" 
         };
 
         // MUSIC HERE ANJAY
         const bgmTracks = [
-            { key: "menu",    title: "Main Theme",    src: "audio/bgm-menu.mp3" },
+            { key: "menu",    title: "Main Theme",    src: "audio/music_1.mp3" },
             { key: "mrbeast", title: "im mr beast.",  src: "audio/bgm-mrbeast.mp3" }
         ];
 
@@ -332,7 +333,7 @@
                 bgmSlider.value = Math.round(bgmVolume * 100);
                 bgmValue.textContent = `${bgmSlider.value}%`;
 
-                bgmSlider.addEventListener("input", () => {
+                bgmSlider.addEventListener("input", () => { "10vh",
                     bgmValue.textContent = `${bgmSlider.value}%`;
                     setBGMVolume(bgmSlider.value);
                 });
@@ -364,7 +365,7 @@
                         {
                             name: "me",
                             sprite:"images/pamanbuasfake.png",
-                            size: "40vh",
+                            size: "0vh",
                             bg: "images/dokidoki.webp",
                             text: "What a beautifull morning today is."
                         },
@@ -379,7 +380,22 @@
                             sprite: "images/pamanbuasfake.png",
                             size: "100vh",
                             text: "woah"
-                        }
+                        },
+                        {
+                            name: "Narrator",
+                            sprite: "images/pamanbuasfake.png",
+                            size: "0vh",
+                            bg: "images/umn.jpg",
+                            text: "meanwhile at wemen..."
+                        },
+                        {
+                            name: "Narrator",
+                            size: "0vh",
+                            bg: "images/nuke.jpg",
+                            text: "meanwhile at wemen..."
+                        },
+                        
+
                     ]
                 }
                 // Add future dialogues here! Example:

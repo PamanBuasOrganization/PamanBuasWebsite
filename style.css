@@ -211,7 +211,7 @@ body:has(.vn-screen:target, .vn-overlay:target) #main {
 /* 3. CHARACTER SPRITE */
 .vn-character {
     position: absolute;
-    bottom: 300px;
+    bottom: -170px;
     left: 50%;
     transform: translateX(-50%);
     height: var(--sprite-height, 85vh); /* Adjust height so the character frames nicely */

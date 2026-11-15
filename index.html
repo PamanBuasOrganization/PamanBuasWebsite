@@ -398,6 +398,12 @@
                         size: "0vh",
                         bg: "images/umn.jpg",
                         text: "meanwhile at wemen...",
+                        // Example: add signChallenge to any line once recorded into STATIC_SIGNS / DYNAMIC_SIGNS:
+                        // signChallenge: {
+                        //     sign: "TERIMA_KASIH",
+                        //     prompt: "Perform sign: TERIMA KASIH",
+                        //     nextScene: "Timeline_1"
+                        // },
                         choices: [
                             {
                                 label: "nuke umn",
@@ -640,6 +646,20 @@
         const camCheckbox  = document.getElementById("opt-cam");
         const closeBtn     = document.getElementById("sign-cam-close");
 
+        // Paste recorded stationary sign vectors here (from SignManager.recordStatic("LABEL"))
+        const STATIC_SIGNS = {
+            // "A": [0.012, -0.045, ...],
+        };
+
+        // Paste recorded moving sign sequences here (from SignManager.recordMotion("LABEL"))
+        const DYNAMIC_SIGNS = {
+            // "TERIMA_KASIH": [0.018, -0.032, ...],
+        };
+
+        const MOTION_FRAMES = 16;
+        const motionBuffer = [];
+        let latestPoseVector = null;
+
         let recognizer = null;
         let stream = null;
         let isRunning = false;
@@ -649,23 +669,126 @@
         let activeChallenge = null; // { sign, prompt, holdMs, onSuccess }
         let holdStartTime = null;
 
-        // Count extended fingers (0-5) from 21 hand landmarks (works for both left & right hands)
-        function countExtendedFingers(landmarks) {
-            let count = 0;
+        // Converts 1 or 2 hands into a normalized 126-number 3D pose vector
+        function extractPoseVector(landmarksList, handednesses) {
+            if (!landmarksList || landmarksList.length === 0) return null;
 
-            // Thumb: compare tip(4) vs joint(3) distance to pinky base(17)
-            const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
-            if (dist(landmarks[4], landmarks[17]) > dist(landmarks[3], landmarks[17]) * 1.15) {
-                count++;
+            const paired = landmarksList.map((lm, i) => ({
+                lm,
+                side: handednesses?.[i]?.[0]?.categoryName || (i === 0 ? "Left" : "Right")
+            }));
+            paired.sort((a, b) => a.side.localeCompare(b.side));
+
+            const anchor = paired[0].lm[0];
+            const palmScale = Math.hypot(
+                paired[0].lm[9].x - anchor.x,
+                paired[0].lm[9].y - anchor.y,
+                paired[0].lm[9].z - anchor.z
+            ) || 1;
+
+            const raw = [];
+            for (let h = 0; h < 2; h++) {
+                if (paired[h]) {
+                    for (const pt of paired[h].lm) {
+                        raw.push(
+                            (pt.x - anchor.x) / palmScale,
+                            (pt.y - anchor.y) / palmScale,
+                            (pt.z - anchor.z) / palmScale
+                        );
+                    }
+                } else {
+                    for (let k = 0; k < 63; k++) raw.push(0);
+                }
             }
 
-            // Index(8/6), Middle(12/10), Ring(16/14), Pinky(20/18): tip higher than middle joint
-            const fingerPairs = [[8, 6], [12, 10], [16, 14], [20, 18]];
-            for (const [tip, pip] of fingerPairs) {
-                if (landmarks[tip].y < landmarks[pip].y) count++;
+            const magnitude = Math.hypot(...raw) || 1;
+            return raw.map((v) => v / magnitude);
+        }
+
+        function cosineSimilarity(vecA, vecB) {
+            if (!vecA || !vecB || vecA.length !== vecB.length) return 0;
+            let dot = 0;
+            for (let i = 0; i < vecA.length; i++) {
+                dot += vecA[i] * vecB[i];
+            }
+            return dot;
+        }
+
+        function resampleSequence(frames, targetCount = MOTION_FRAMES) {
+            if (!frames || frames.length < 6) return null;
+
+            const flat = [];
+            for (let i = 0; i < targetCount; i++) {
+                const idx = Math.min(
+                    Math.floor((i / (targetCount - 1)) * (frames.length - 1)),
+                    frames.length - 1
+                );
+                flat.push(...frames[idx]);
             }
 
-            return String(count); // Returns "0" through "5"
+            const mag = Math.hypot(...flat) || 1;
+            return flat.map((v) => v / mag);
+        }
+
+        function matchStaticSign(liveVec, threshold = 0.93) {
+            let bestLabel = null;
+            let bestScore = threshold;
+
+            for (const [label, savedVec] of Object.entries(STATIC_SIGNS)) {
+                const score = cosineSimilarity(liveVec, savedVec);
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestLabel = label;
+                }
+            }
+            return bestLabel ? { label: bestLabel, confidence: bestScore } : null;
+        }
+
+        function matchDynamicSign(threshold = 0.90) {
+            const liveSeq = resampleSequence(motionBuffer, MOTION_FRAMES);
+            if (!liveSeq) return null;
+
+            let bestLabel = null;
+            let bestScore = threshold;
+
+            for (const [label, savedSeq] of Object.entries(DYNAMIC_SIGNS)) {
+                const score = cosineSimilarity(liveSeq, savedSeq);
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestLabel = label;
+                }
+            }
+            return bestLabel ? { label: bestLabel, confidence: bestScore } : null;
+        }
+
+        function recordStatic(label) {
+            if (!latestPoseVector) {
+                console.warn("No hand detected! Hold your sign in front of the camera first.");
+                return;
+            }
+            STATIC_SIGNS[label] = latestPoseVector;
+            console.log(`Saved static sign "${label}". Copy this into STATIC_SIGNS:\n"${label}": ${JSON.stringify(latestPoseVector)},`);
+        }
+
+        function recordMotion(label, durationMs = 1500) {
+            console.log(`Recording "${label}" in 1 second... get ready!`);
+            setTimeout(() => {
+                const captured = [];
+                const interval = setInterval(() => {
+                    if (latestPoseVector) captured.push(latestPoseVector);
+                }, 50);
+
+                setTimeout(() => {
+                    clearInterval(interval);
+                    const sequenceVec = resampleSequence(captured, MOTION_FRAMES);
+                    if (!sequenceVec) {
+                        console.warn("Not enough hand frames captured.");
+                        return;
+                    }
+                    DYNAMIC_SIGNS[label] = sequenceVec;
+                    console.log(`Saved moving sign "${label}". Copy this into DYNAMIC_SIGNS:\n"${label}": ${JSON.stringify(sequenceVec)},`);
+                }, durationMs);
+            }, 1000);
         }
 
         async function initModel() {
@@ -683,7 +806,7 @@
                     delegate: "GPU"
                 },
                 runningMode: "VIDEO",
-                numHands: 1
+                numHands: 2
             });
         }
 
@@ -722,6 +845,8 @@
             video.srcObject = null;
             hud.hidden = true;
             if (camCheckbox) camCheckbox.checked = false;
+            latestPoseVector = null;
+            motionBuffer.length = 0;
             resetHold();
         }
 
@@ -742,17 +867,23 @@
             }
         }
 
-        function evaluateSign(gestureName, fingerCount) {
+        function evaluateSign(detectedSign) {
             if (!activeChallenge) return;
 
             const target = String(activeChallenge.sign);
-            // Match either a finger number ("0"-"5") OR a MediaPipe pose ("Thumb_Up", "ILoveYou", etc.)
-            const isMatch = /^[0-5]$/.test(target)
-                ? fingerCount === target
-                : gestureName === target;
+            if (detectedSign !== target) {
+                if (!DYNAMIC_SIGNS[target]) resetHold();
+                return;
+            }
 
-            if (!isMatch) {
-                resetHold();
+            if (DYNAMIC_SIGNS[target]) {
+                const completed = activeChallenge;
+                motionBuffer.length = 0;
+                setChallenge(null);
+                if (window.AudioManager) AudioManager.playSFX("crystal");
+                if (typeof completed.onSuccess === "function") {
+                    completed.onSuccess();
+                }
                 return;
             }
 
@@ -782,14 +913,24 @@
                 const results = recognizer.recognizeForVideo(video, performance.now());
 
                 if (results.landmarks && results.landmarks.length > 0) {
-                    const gesture = results.gestures?.[0]?.[0]?.categoryName || "None";
-                    const fingers = countExtendedFingers(results.landmarks[0]);
+                    latestPoseVector = extractPoseVector(results.landmarks, results.handednesses);
+                    if (latestPoseVector) {
+                        motionBuffer.push(latestPoseVector);
+                        if (motionBuffer.length > 24) motionBuffer.shift();
+                    }
 
-                    detectedEl.textContent =
-                        gesture !== "None" ? `${gesture} (${fingers} fingers)` : `${fingers} fingers`;
+                    const staticMatch  = matchStaticSign(latestPoseVector);
+                    const dynamicMatch = matchDynamicSign();
+                    const detectedSign = dynamicMatch?.label || staticMatch?.label || null;
 
-                    evaluateSign(gesture, fingers);
+                    detectedEl.textContent = detectedSign
+                        ? `Sign: ${detectedSign}`
+                        : `${results.landmarks.length} hand(s) tracked`;
+
+                    evaluateSign(detectedSign);
                 } else {
+                    latestPoseVector = null;
+                    motionBuffer.length = 0;
                     detectedEl.textContent = "No hand";
                     resetHold();
                 }
@@ -809,7 +950,7 @@
             closeBtn.addEventListener("click", stopCamera);
         }
 
-        return { startCamera, stopCamera, setChallenge };
+        return { startCamera, stopCamera, setChallenge, recordStatic, recordMotion };
     })();
 
     window.SignManager = SignManager;

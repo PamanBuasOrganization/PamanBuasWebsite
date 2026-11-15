@@ -24,7 +24,7 @@
         <h1 class="game-title">Mist or beast</h1>
         <nav class="main-menu-list">
             <ul>
-                <li><a href="#intro" data-dialogue="intro">Start Adventure</a></li>
+                <li><a href="#story" data-dialogue="story">Start Adventure</a></li>
                 <li><a href="#options">Options</a></li>
                 <li><a href="#LearnMore">Learn More</a></li>
             </ul>
@@ -36,7 +36,7 @@
     </main>
 
     <!-- Dialogue Overlay -->
-     <section class="screen in-adventure vn-overlay" id="intro">
+     <section class="screen in-adventure vn-overlay" id="story">
         <a href="#select-topic" id="vn-skip-btn" class="vn-skip">skip >></a>
 
         <div class="vn-dialogue-box">
@@ -95,8 +95,7 @@
                 </div>
             </div>
         </div>
-
-        <!-- navigation -->
+        
         <nav class="teach-navigation">
             <ul>
                 <li><a href="#main">Back to Menu</a></li>
@@ -122,8 +121,7 @@
                 </div>
             </div>
         </div>
-        
-        <!-- navigation -->
+    
         <nav class="teach-navigation">
             <ul>
                 <li><a href="#main">Back to Menu</a></li>
@@ -199,6 +197,10 @@
             <a href="#options" class="acc-item acc-link" id="acc-options-link">Options</a>
         </div>
     </aside>
+
+
+    <!--Dialogue Overlay -->
+    <section class ="screen in-story vn-overlay" id="story"
 
 
 <!-- script land -->
@@ -359,12 +361,12 @@
         document.addEventListener("DOMContentLoaded", () => {
             // 1. DEFINE ALL DIALOGUE SCENES HERE
             const dialogues = {
-                intro: {
+                story: {
                     nextScreen: "#select-topic",
                     lines: [
                         {
                             name: "me",
-                            sprite:"images/pamanbuasfake.png",
+                            sprite: "images/girl-peace-sign.png",
                             size: "0vh",
                             bg: "images/dokidoki.webp",
                             text: "What a beautifull morning today is."
@@ -410,7 +412,7 @@
             // initialize
             const stageEl     = document.querySelector(".story-background");
             const stageSprite = document.getElementById("story-sprite");
-            const vnOverlay   = document.getElementById("intro");
+            const vnOverlay   = document.getElementById("story");
             const vnName      = document.getElementById("vn-name");
             const vnText      = document.getElementById("vn-text");
             const vnSkipBtn   = document.getElementById("vn-skip-btn");
@@ -435,11 +437,11 @@
                 });
             });
 
-            let activeSceneKey = "intro";
+            let activeSceneKey = "story";
             let currentLine = 0;
 
             function loadScene(sceneKey) {
-                activeSceneKey = dialogues[sceneKey] ? sceneKey : "intro";
+                activeSceneKey = dialogues[sceneKey] ? sceneKey : "story";
                 currentLine = 0;
                 vnSkipBtn.href = dialogues[activeSceneKey].nextScreen;
                 showLine(0);
@@ -480,7 +482,7 @@
             }
 
             // Initialize default scene
-            loadScene("intro");
+            loadScene("story");
 
             // Listen for any link with data-dialogue="..."
             document.querySelectorAll("[data-dialogue]").forEach((trigger) => {
@@ -497,16 +499,16 @@
 
             // Press Space or Enter during dialogue to continue
             document.addEventListener("keydown", (event) => {
-                const isDialogueOpen = window.location.hash === "#intro";
+                const isDialogueOpen = window.location.hash === "#story";
                 if (isDialogueOpen && (event.key === " " || event.key === "Enter")) {
                     event.preventDefault();
                     advanceDialogue();
                 }
             });
 
-            // Reset if user navigates back to #intro via browser history
+            // Reset if user navigates back to #story via browser history
             window.addEventListener("hashchange", () => {
-                if (window.location.hash === "#intro") {
+                if (window.location.hash === "#story") {
                     showLine(currentLine);
                 }
             });

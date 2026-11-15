@@ -35,9 +35,11 @@
         </footer>
     </main>
 
-    <!-- Dialogue Overlay -->
-     <section class="screen in-adventure vn-overlay" id="story">
+    <!-- Dialogue Overlay (Merged into one #story section with #vn-choices) -->
+    <section class="screen in-adventure vn-overlay" id="story">
         <a href="#select-topic" id="vn-skip-btn" class="vn-skip">skip >></a>
+
+        <div class="vn-choices" id="vn-choices"></div>
 
         <div class="vn-dialogue-box">
             <div class="vn-name-tag" id="vn-name">Paman Buas</div>
@@ -45,7 +47,6 @@
             <span class="vn-next-indicator">▼</span>
         </div>
     </section>
-
 
     <!-- SELECT TOPIC -->
     <main class="screen in-adventure dim-story main-menu" id="select-topic">
@@ -99,7 +100,6 @@
         <nav class="teach-navigation">
             <ul>
                 <li><a href="#main">Back to Menu</a></li>
-                
             </ul>
         </nav>
     </main>
@@ -125,7 +125,6 @@
         <nav class="teach-navigation">
             <ul>
                 <li><a href="#main">Back to Menu</a></li>
-
             </ul>
         </nav>
     </main>
@@ -136,7 +135,7 @@
         <nav class="main-menu-list">
             <ul>
                 <li class="audio-control">
-                    <label for ="sfx-slider">sfx: <span id="sfx-value">100%</span></label>
+                    <label for="sfx-slider">sfx: <span id="sfx-value">100%</span></label>
                     <input type="range" id="sfx-slider" min="0" max="100" value="100">
                 </li>
                 <li class="audio-control">
@@ -152,11 +151,7 @@
     </main>
 
     <!-- LEARN MORE -->
-    <!-- todo list
-        => make it so when hover, red clickbait arrow animation plays pointing to learn more
-        => opening animation and mr beast animation(starts at open and restart at hover)
-    -->
-     <main class="screen main-menu" id="LearnMore">
+    <main class="screen main-menu" id="LearnMore">
         <h1 class="game-title">About Us</h1>
         <nav class="main-menu-list">
             <ul>
@@ -164,22 +159,22 @@
                 <li><a href="#main">Back to Menu</a></li>
             </ul>
         </nav>
-     </main>
+    </main>
 
-     <!-- accessibility widget -->
-     <aside class ="acc-widget" aria-label="Accessibility Options">
+    <!-- accessibility widget -->
+    <aside class="acc-widget" aria-label="Accessibility Options">
 
         <!-- hidden checkbox-->
-        <input type="checkbox" id="acc-toggle" class ="acc-hidden">
+        <input type="checkbox" id="acc-toggle" class="acc-hidden">
         <label for="acc-toggle" class="acc-trigger">Accessibility</label>
 
         <!-- widget panel -->
         <div class="acc-panel">
 
-            <!-- option 1-->
+            <!-- camera toggle -->
             <label class="acc-item acc-option">
-                <input type="checkbox" id="opt-1">
-                <span>option 1</span>
+            <input type="checkbox" id="opt-cam">
+            <span>camera ui</span>
             </label>
             
             <!-- option 2-->
@@ -198,10 +193,23 @@
         </div>
     </aside>
 
+    <!-- SIGN LANGUAGE CAMERA HUD -->
+    <div class="sign-cam-hud" id="sign-cam-hud" hidden>
+        <div class="sign-cam-header">
+            <span id="sign-status">Loading AI...</span>
+            <button type="button" id="sign-cam-close" title="Turn off camera">✕</button>
+        </div>
 
-    <!--Dialogue Overlay -->
-    <section class ="screen in-story vn-overlay" id="story"
+        <div class="sign-video-wrap">
+            <video id="sign-video" autoplay playsinline muted></video>
+            <div class="sign-detected-badge" id="sign-detected">No hand</div>
+        </div>
 
+        <div class="sign-prompt-box" id="sign-prompt">Free Mode</div>
+        <div class="sign-progress-track">
+            <div class="sign-progress-fill" id="sign-progress-fill"></div>
+        </div>
+    </div>
 
 <!-- script land -->
 
@@ -233,17 +241,15 @@
         bgmPlayer.loop = true;
         bgmPlayer.volume = bgmVolume;
 
-        // Play any SFX (clones node so rapid clicks never cut off sound)
         function playSFX(name) {
             const src = sfxFiles[name];
             if (!src || sfxVolume <= 0) return;
 
             const sound = new Audio(src);
             sound.volume = sfxVolume;
-            sound.play().catch(() => {}); // Safely ignores missing files
+            sound.play().catch(() => {});
         }
 
-        // Play or switch Background Music
         function playBGM(index = currentTrackIndex) {
             currentTrackIndex = index % bgmTracks.length;
             const track = bgmTracks[currentTrackIndex];
@@ -253,7 +259,6 @@
             }
             bgmPlayer.volume = bgmVolume;
 
-            // Browsers block audio until the user's first click; queue if blocked
             bgmPlayer.play().then(() => {
                 pendingTrack = null;
             }).catch(() => {
@@ -278,7 +283,6 @@
             localStorage.setItem("bgmVol", bgmVolume);
         }
 
-        // Unlock queued BGM on the player's very first interaction anywhere
         ["pointerdown", "keydown"].forEach((evt) => {
             document.addEventListener(evt, () => {
                 if (pendingTrack !== null) {
@@ -307,16 +311,17 @@
         document.addEventListener("click", (event) => {
             const target = event.target.closest(interactiveSelector);
             if (!target || target.hasAttribute("data-no-sfx")) return;
+            if (event.target.tagName === "INPUT" && target.tagName === "LABEL") return;
             playSFX(target.dataset.sfx || "click");
         });
 
         // 4. WIRE UP OPTIONS MENU CONTROLS
         document.addEventListener("DOMContentLoaded", () => {
-            const sfxSlider   = document.getElementById("sfx-slider");
-            const sfxValue    = document.getElementById("sfx-value");
-            const bgmSlider   = document.getElementById("bgm-slider");
-            const bgmValue    = document.getElementById("bgm-value");
-            const bgmSwitch   = document.getElementById("bgm-switch-btn");
+            const sfxSlider = document.getElementById("sfx-slider");
+            const sfxValue  = document.getElementById("sfx-value");
+            const bgmSlider = document.getElementById("bgm-slider");
+            const bgmValue  = document.getElementById("bgm-value");
+            const bgmSwitch = document.getElementById("bgm-switch");
 
             if (sfxSlider && sfxValue) {
                 sfxSlider.value = Math.round(sfxVolume * 100);
@@ -327,7 +332,6 @@
                     setSFXVolume(sfxSlider.value);
                 });
 
-                // Plays a sample click when the user releases the slider
                 sfxSlider.addEventListener("change", () => playSFX("click"));
             }
 
@@ -335,7 +339,7 @@
                 bgmSlider.value = Math.round(bgmVolume * 100);
                 bgmValue.textContent = `${bgmSlider.value}%`;
 
-                bgmSlider.addEventListener("input", () => { "10vh",
+                bgmSlider.addEventListener("input", () => {
                     bgmValue.textContent = `${bgmSlider.value}%`;
                     setBGMVolume(bgmSlider.value);
                 });
@@ -343,177 +347,474 @@
 
             if (bgmSwitch) {
                 bgmSwitch.addEventListener("click", () => {
-                const track = nextBGM();
-                bgmSwitch.textContent = `Track: ${track.title}`;
-            });
-}
+                    const track = nextBGM();
+                    bgmSwitch.textContent = `Track: ${track.title}`;
+                });
+            }
 
-            // Start default BGM (will begin immediately on first click)
             playBGM(0);
         });
 
         return { playSFX, playBGM, nextBGM, setSFXVolume, setBGMVolume };
     })();
+    window.AudioManager = AudioManager;
 </script>
 
 <!-- dialogue script and etc -->
 <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            // 1. DEFINE ALL DIALOGUE SCENES HERE
-            const dialogues = {
-                story: {
-                    nextScreen: "#select-topic",
-                    lines: [
-                        {
-                            name: "me",
-                            sprite: "images/girl-peace-sign.png",
-                            size: "0vh",
-                            bg: "images/dokidoki.webp",
-                            text: "What a beautifull morning today is."
-                        },
-                        {
-                            name: "Paman Buas",
-                            sprite: "images/girl-peace-sign.png",
-                            size: "120vh",
-                            text: "adslkjasdw"
-                        },
-                        {
-                            name: "Paman Buas",
-                            sprite: "images/pamanbuasfake.png",
-                            size: "100vh",
-                            text: "woah"
-                        },
-                        {
-                            name: "Narrator",
-                            sprite: "images/pamanbuasfake.png",
-                            size: "0vh",
-                            bg: "images/umn.jpg",
-                            text: "meanwhile at wemen..."
-                        },
-                        {
-                            name: "Narrator",
-                            size: "0vh",
-                            bg: "images/nuke.jpg",
-                            text: "meanwhile at wemen..."
-                        },
-                        
-
-                    ]
-                }
-                // Add future dialogues here! Example:
-                // mathIntro: {
-                //     nextScreen: "#math-teach",
-                //     lines: [
-                //         { name: "Paman Buas", sprite: "images/silentvoice.jpg", text: "Time for math!" }
-                //     ]
-                // }
-            };
-
-            // initialize
-            const stageEl     = document.querySelector(".story-background");
-            const stageSprite = document.getElementById("story-sprite");
-            const vnOverlay   = document.getElementById("story");
-            const vnName      = document.getElementById("vn-name");
-            const vnText      = document.getElementById("vn-text");
-            const vnSkipBtn   = document.getElementById("vn-skip-btn");
-            const optionsBackBtn = document.getElementById("options-back-btn");
-            const accToggle      = document.getElementById("acc-toggle");
-
-            // Runs right before the browser navigates to #options
-            // options back button thingy script
-            document.querySelectorAll('a[href="#options"]').forEach((btn) => {
-                btn.addEventListener("click", () => {
-                    // Grab the screen you are currently on (defaults to #main)
-                    const currentScreen = window.location.hash || "#main";
-
-                    if (currentScreen !== "#options" && optionsBackBtn) {
-                        optionsBackBtn.href = currentScreen;
+    document.addEventListener("DOMContentLoaded", () => {
+        // SIM STATE (Tracks choices, stats, and unlocks across the game)
+        const simState = {
+            affection: 0,
+            somethingUnlocked: false
+        };  
+    
+        const dialogues = {
+            story: {
+                nextScreen: "#select-topic",
+                lines: [
+                    {
+                        name: "me",
+                        sprite: "images/girl-peace-sign.png",
+                        size: "0vh",
+                        bg: "images/dokidoki.webp",
+                        text: "What a beautifull morning today is."
+                    },
+                    {
+                        name: "Paman Buas",
+                        sprite: "images/girl-peace-sign.png",
+                        size: "120vh",
+                        text: "adslkjasdw"
+                    },
+                    {
+                        name: "Paman Buas",
+                        sprite: "images/pamanbuasfake.png",
+                        size: "100vh",
+                        text: "woah"
+                    },
+                    {
+                        name: "Narrator",
+                        sprite: "images/pamanbuasfake.png",
+                        size: "0vh",
+                        bg: "images/umn.jpg",
+                        text: "meanwhile at wemen...",
+                        choices: [
+                            {
+                                label: "nuke umn",
+                                action: () => { simState.affection += 10; },
+                                nextScene: "Timeline_1"
+                            },
+                            {
+                                label: "i just wanna get home man",
+                                nextScreen: "#main"
+                            },
+                            {
+                                label: "stever win",
+                                nextScene: "Timeline_2"
+                            }
+                        ]
                     }
+                ]
+            },
 
-                    // Automatically close the top-right Accessibility menu
-                    if (accToggle) {
-                        accToggle.checked = false;
+            // Timeline 1 (Moved outside story.lines to be a top-level scene)
+            Timeline_1: {
+                nextScreen: "#select-topic",
+                lines: [
+                    {
+                        name: "Narrator",
+                        size: "0vh",
+                        bg: "images/nuke.jpg",
+                        text: "..."
                     }
-                });
-            });
+                ]
+            },
 
-            let activeSceneKey = "story";
-            let currentLine = 0;
-
-            function loadScene(sceneKey) {
-                activeSceneKey = dialogues[sceneKey] ? sceneKey : "story";
-                currentLine = 0;
-                vnSkipBtn.href = dialogues[activeSceneKey].nextScreen;
-                showLine(0);
+            // Timeline 2
+            Timeline_2: {
+                nextScreen: "#main",
+                lines: [
+                    {
+                        name: "Kein",
+                        text: "brah"
+                    },
+                    {
+                        name: "Kein",
+                        text: "ok go back"
+                    }
+                ]
             }
+        };
 
-            function showLine(index) {
-                const scene = dialogues[activeSceneKey];
-                const line = scene.lines[index];
+        // initialize
+        const stageEl         = document.querySelector(".story-background");
+        const stageSprite     = document.getElementById("story-sprite");
+        const vnOverlay       = document.getElementById("story");
+        const vnName          = document.getElementById("vn-name");
+        const vnText          = document.getElementById("vn-text");
+        const vnChoices       = document.getElementById("vn-choices");
+        const vnNextIndicator = document.querySelector(".vn-next-indicator");
+        const vnSkipBtn       = document.getElementById("vn-skip-btn");
+        const optionsBackBtn  = document.getElementById("options-back-btn");
+        const accToggle       = document.getElementById("acc-toggle");
 
-                vnName.textContent = line.name;
-                vnText.textContent = line.text;
-                AudioManager.playSFX("blip");
+        // Remember previous screen for #options Back button
+        document.querySelectorAll('a[href="#options"]').forEach((btn) => {
+            btn.addEventListener("click", () => {
+                const currentScreen = window.location.hash || "#main";
 
-                // Update sprite if specified on this line
-                if (line.sprite && stageSprite) {
-                    stageSprite.src = line.sprite;
+                if (currentScreen !== "#options" && optionsBackBtn) {
+                    optionsBackBtn.href = currentScreen;
                 }
 
-                if (stageEl) {
-               stageEl.style.setProperty("--sprite-height", line.size || "85vh");
-                }
-
-                // Update background image if specified on this line
-                if (line.bg && stageEl) {
-                    stageEl.style.setProperty("--scene-bg", `url('${line.bg}')`);
-                }
-            }
-
-            function advanceDialogue() {
-                const scene = dialogues[activeSceneKey];
-                currentLine++;
-
-                if (currentLine < scene.lines.length) {
-                    showLine(currentLine);
-                } else {
-                    window.location.hash = scene.nextScreen;
-                }
-            }
-
-            // Initialize default scene
-            loadScene("story");
-
-            // Listen for any link with data-dialogue="..."
-            document.querySelectorAll("[data-dialogue]").forEach((trigger) => {
-                trigger.addEventListener("click", () => {
-                    loadScene(trigger.dataset.dialogue);
-                });
-            });
-
-            // Click anywhere on the dialogue screen to continue
-            vnOverlay.addEventListener("click", (event) => {
-                if (event.target.closest(".vn-skip")) return;
-                advanceDialogue();
-            });
-
-            // Press Space or Enter during dialogue to continue
-            document.addEventListener("keydown", (event) => {
-                const isDialogueOpen = window.location.hash === "#story";
-                if (isDialogueOpen && (event.key === " " || event.key === "Enter")) {
-                    event.preventDefault();
-                    advanceDialogue();
-                }
-            });
-
-            // Reset if user navigates back to #story via browser history
-            window.addEventListener("hashchange", () => {
-                if (window.location.hash === "#story") {
-                    showLine(currentLine);
+                if (accToggle) {
+                    accToggle.checked = false;
                 }
             });
         });
-    </script>
+
+        document.querySelectorAll('a[href="#"]').forEach((link) => {
+            link.addEventListener("click", (event) => event.preventDefault());
+        });
+
+        let activeSceneKey = "story";
+        let currentLine = 0;
+        let hasActiveChoices = false;
+
+        function loadScene(sceneKey) {
+            activeSceneKey = dialogues[sceneKey] ? sceneKey : "story";
+            currentLine = 0;
+            vnSkipBtn.href = dialogues[activeSceneKey].nextScreen;
+            showLine(0);
+        }
+
+        function renderChoices(choices) {
+            vnChoices.innerHTML = "";
+
+            if (!choices || choices.length === 0) {
+                hasActiveChoices = false;
+                if (vnNextIndicator) vnNextIndicator.style.display = "";
+                return;
+            }
+
+            hasActiveChoices = true;
+            if (vnNextIndicator) vnNextIndicator.style.display = "none";
+
+            choices.forEach((choice) => {
+                const btn = document.createElement("button");
+                btn.type = "button";
+                btn.className = "vn-choice-btn";
+                btn.textContent = choice.label;
+
+                btn.addEventListener("click", (event) => {
+                    event.stopPropagation();
+
+                    if (typeof choice.action === "function") {
+                        choice.action();
+                    }
+
+                    if (choice.nextScene) {
+                        loadScene(choice.nextScene);
+                    } else if (choice.nextScreen) {
+                        vnChoices.innerHTML = "";
+                        hasActiveChoices = false;
+                        window.location.hash = choice.nextScreen;
+                    } else {
+                        hasActiveChoices = false;
+                        advanceDialogue();
+                    }
+                });
+
+                vnChoices.appendChild(btn);
+            });
+        }
+
+        function showLine(index) {
+            const scene = dialogues[activeSceneKey];
+            const line = scene.lines[index];
+
+            vnName.textContent = line.name || "";
+            vnText.textContent = line.text;
+            AudioManager.playSFX("blip");
+
+            if (line.sprite && stageSprite) {
+                stageSprite.src = line.sprite;
+            }
+
+            if (stageEl) {
+                stageEl.style.setProperty("--sprite-height", line.size || "85vh");
+            }
+
+            if (line.bg && stageEl) {
+                stageEl.style.setProperty("--scene-bg", `url('${line.bg}')`);
+            }
+
+            renderChoices(line.choices);
+
+            // Hook up sign language challenge if this dialogue line defines one
+            if (window.SignManager) {
+                if (line.signChallenge) {
+                    window.SignManager.setChallenge({
+                        sign: line.signChallenge.sign,
+                        prompt: line.signChallenge.prompt,
+                        holdMs: line.signChallenge.holdMs || 1000,
+                        onSuccess: () => {
+                            if (typeof line.signChallenge.action === "function") {
+                                line.signChallenge.action();
+                            }
+                            if (line.signChallenge.nextScene) {
+                                loadScene(line.signChallenge.nextScene);
+                            } else if (line.signChallenge.nextScreen) {
+                                vnChoices.innerHTML = "";
+                                hasActiveChoices = false;
+                                window.location.hash = line.signChallenge.nextScreen;
+                            } else {
+                                hasActiveChoices = false;
+                                advanceDialogue();
+                            }
+                        }
+                    });
+                } else {
+                    window.SignManager.setChallenge(null);
+                }
+            }
+        }
+
+        function advanceDialogue() {
+            if (hasActiveChoices) return;
+
+            const scene = dialogues[activeSceneKey];
+            currentLine++;
+
+            if (currentLine < scene.lines.length) {
+                showLine(currentLine);
+            } else {
+                window.location.hash = scene.nextScreen;
+            }
+        }
+
+        loadScene("story");
+
+        document.querySelectorAll("[data-dialogue]").forEach((trigger) => {
+            trigger.addEventListener("click", () => {
+                loadScene(trigger.dataset.dialogue);
+            });
+        });
+
+        vnOverlay.addEventListener("click", (event) => {
+            if (event.target.closest(".vn-skip") || hasActiveChoices) return;
+            advanceDialogue();
+        });
+
+        document.addEventListener("keydown", (event) => {
+            const isDialogueOpen = window.location.hash === "#story";
+            if (isDialogueOpen && !hasActiveChoices && (event.key === " " || event.key === "Enter")) {
+                event.preventDefault();
+                advanceDialogue();
+            }
+        });
+
+        window.addEventListener("hashchange", () => {
+            if (window.location.hash === "#story") {
+                showLine(currentLine);
+            }
+        });
+    });
+</script>
+
+
+<!-- CAMERA -->
+<script type="module">
+    import {
+        FilesetResolver,
+        GestureRecognizer
+    } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs";
+
+    const SignManager = (() => {
+        const hud          = document.getElementById("sign-cam-hud");
+        const video        = document.getElementById("sign-video");
+        const statusEl     = document.getElementById("sign-status");
+        const detectedEl   = document.getElementById("sign-detected");
+        const promptEl     = document.getElementById("sign-prompt");
+        const progressEl   = document.getElementById("sign-progress-fill");
+        const camCheckbox  = document.getElementById("opt-cam");
+        const closeBtn     = document.getElementById("sign-cam-close");
+
+        let recognizer = null;
+        let stream = null;
+        let isRunning = false;
+        let lastVideoTime = -1;
+
+        // Active sign challenge state
+        let activeChallenge = null; // { sign, prompt, holdMs, onSuccess }
+        let holdStartTime = null;
+
+        // Count extended fingers (0-5) from 21 hand landmarks (works for both left & right hands)
+        function countExtendedFingers(landmarks) {
+            let count = 0;
+
+            // Thumb: compare tip(4) vs joint(3) distance to pinky base(17)
+            const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+            if (dist(landmarks[4], landmarks[17]) > dist(landmarks[3], landmarks[17]) * 1.15) {
+                count++;
+            }
+
+            // Index(8/6), Middle(12/10), Ring(16/14), Pinky(20/18): tip higher than middle joint
+            const fingerPairs = [[8, 6], [12, 10], [16, 14], [20, 18]];
+            for (const [tip, pip] of fingerPairs) {
+                if (landmarks[tip].y < landmarks[pip].y) count++;
+            }
+
+            return String(count); // Returns "0" through "5"
+        }
+
+        async function initModel() {
+            if (recognizer) return;
+            statusEl.textContent = "Loading AI model...";
+
+            const vision = await FilesetResolver.forVisionTasks(
+                "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm"
+            );
+
+            recognizer = await GestureRecognizer.createFromOptions(vision, {
+                baseOptions: {
+                    modelAssetPath:
+                        "https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task",
+                    delegate: "GPU"
+                },
+                runningMode: "VIDEO",
+                numHands: 1
+            });
+        }
+
+        async function startCamera() {
+            if (isRunning) return;
+            hud.hidden = false;
+            if (camCheckbox) camCheckbox.checked = true;
+
+            try {
+                await initModel();
+                statusEl.textContent = "Requesting camera...";
+
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: { width: 320, height: 240, facingMode: "user" },
+                    audio: false
+                });
+
+                video.srcObject = stream;
+                await video.play();
+
+                isRunning = true;
+                statusEl.textContent = "Camera Active";
+                requestAnimationFrame(detectLoop);
+            } catch (err) {
+                statusEl.textContent = "Camera blocked/unavailable";
+                console.error(err);
+            }
+        }
+
+        function stopCamera() {
+            isRunning = false;
+            if (stream) {
+                stream.getTracks().forEach((track) => track.stop());
+                stream = null;
+            }
+            video.srcObject = null;
+            hud.hidden = true;
+            if (camCheckbox) camCheckbox.checked = false;
+            resetHold();
+        }
+
+        function resetHold() {
+            holdStartTime = null;
+            if (progressEl) progressEl.style.width = "0%";
+        }
+
+        // Set a target sign for dialogue or math/physics quizzes
+        function setChallenge(challenge) {
+            activeChallenge = challenge || null;
+            resetHold();
+
+            if (promptEl) {
+                promptEl.textContent = challenge
+                    ? challenge.prompt || `Sign: ${challenge.sign}`
+                    : "Free Mode";
+            }
+        }
+
+        function evaluateSign(gestureName, fingerCount) {
+            if (!activeChallenge) return;
+
+            const target = String(activeChallenge.sign);
+            // Match either a finger number ("0"-"5") OR a MediaPipe pose ("Thumb_Up", "ILoveYou", etc.)
+            const isMatch = /^[0-5]$/.test(target)
+                ? fingerCount === target
+                : gestureName === target;
+
+            if (!isMatch) {
+                resetHold();
+                return;
+            }
+
+            if (!holdStartTime) {
+                holdStartTime = performance.now();
+            }
+
+            const holdDuration = activeChallenge.holdMs || 1000;
+            const progress = Math.min((performance.now() - holdStartTime) / holdDuration, 1);
+            progressEl.style.width = `${Math.round(progress * 100)}%`;
+
+            if (progress >= 1) {
+                const completed = activeChallenge;
+                setChallenge(null);
+                if (window.AudioManager) AudioManager.playSFX("crystal");
+                if (typeof completed.onSuccess === "function") {
+                    completed.onSuccess();
+                }
+            }
+        }
+
+        function detectLoop() {
+            if (!isRunning) return;
+
+            if (video.readyState >= 2 && video.currentTime !== lastVideoTime) {
+                lastVideoTime = video.currentTime;
+                const results = recognizer.recognizeForVideo(video, performance.now());
+
+                if (results.landmarks && results.landmarks.length > 0) {
+                    const gesture = results.gestures?.[0]?.[0]?.categoryName || "None";
+                    const fingers = countExtendedFingers(results.landmarks[0]);
+
+                    detectedEl.textContent =
+                        gesture !== "None" ? `${gesture} (${fingers} fingers)` : `${fingers} fingers`;
+
+                    evaluateSign(gesture, fingers);
+                } else {
+                    detectedEl.textContent = "No hand";
+                    resetHold();
+                }
+            }
+
+            requestAnimationFrame(detectLoop);
+        }
+
+        // Wire up Accessibility checkbox & close button
+        if (camCheckbox) {
+            camCheckbox.addEventListener("change", () => {
+                camCheckbox.checked ? startCamera() : stopCamera();
+            });
+        }
+
+        if (closeBtn) {
+            closeBtn.addEventListener("click", stopCamera);
+        }
+
+        return { startCamera, stopCamera, setChallenge };
+    })();
+
+    window.SignManager = SignManager;
+</script>
+    
 
 </body>
 </html>

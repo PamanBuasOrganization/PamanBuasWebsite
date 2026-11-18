@@ -4,17 +4,17 @@ Animations
 - [ ] Learn more
 
 Sound
-- [ ] Music
+- [7] Music
 - [ ] sfx for all the shi
 
 Options
 - [o] accessable in game
 - [o] volume options
 
-Learn more page
-- [ ] opening animation
+Learn more page (Stever win otw bikin)
+- [o] opening animation
 - [ ] github page and socials
-- [ ] mrbeast animation
+- [o?] mrbeast animation
 
 Assets
 - [ ] Main menu and button assets

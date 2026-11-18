@@ -21,12 +21,12 @@
     <main class="screen main-menu" id="main">
         
         <!-- title -->
-        <h1 class="game-title">Mist or beast</h1>
+        <h1 class="game-title">Mist Of East</h1>
         <nav class="main-menu-list">
             <ul>
                 <li><a href="#story" data-dialogue="story">Start Adventure</a></li>
                 <li><a href="#options">Options</a></li>
-                <li><a href="#LearnMore">Learn More</a></li>
+                <li><a href="#LearnMore" id="learnMoreButton">Learn More</a></li>
             </ul>
         </nav>
 
@@ -151,15 +151,16 @@
     </main>
 
     <!-- LEARN MORE -->
-    <main class="screen main-menu" id="LearnMore">
-        <h1 class="game-title">About Us</h1>
-        <nav class="main-menu-list">
-            <ul>
-                <li><a href="#">awdawd</a></li>
-                <li><a href="#main">Back to Menu</a></li>
-            </ul>
-        </nav>
-    </main>
+<main class="screen main-menu" id="LearnMore">
+    <h1 class="game-title">About Us</h1>
+
+    <nav class="main-menu-list">
+        <ul>
+            <li><a href="#" id="scareButton">awdawd</a></li>
+            <li><a href="#main">Back to Menu</a></li>
+        </ul>
+    </nav>
+</main>
 
     <!-- accessibility widget -->
     <aside class="acc-widget" aria-label="Accessibility Options">
@@ -211,6 +212,18 @@
         </div>
     </div>
 
+    <!-- Jumpscare overlay -->
+<div id="jumpscare">
+    <img src="images/horse.webp" alt="BOO!">
+</div>
+
+<div id="secretSongVisual">
+    <img src="images/tuff.png" alt="Secret Song Easter Egg">
+</div>
+
+<div id="musicVisual">
+    <img id="musicVisualImage" src="" alt="Music artwork">
+</div>
 <!-- script land -->
 
 <!-- audio script -->
@@ -228,7 +241,12 @@
         // MUSIC HERE ANJAY
         const bgmTracks = [
             { key: "menu",    title: "Main Theme",    src: "audio/music_1.mp3" },
-            { key: "mrbeast", title: "im mr beast.",  src: "audio/bgm-mrbeast.mp3" }
+            { key: "mrbeast", title: "im mr beast.",  src: "audio/balls.mp3" },
+            { key: "idk", title: "tuff",  src: "audio/music_2.mp3" },
+            { key: "secret", title: "???", src: "audio/tuff.mp3",image:"images/tuff.png", spin:true },
+            { key: "ponker", title: "ponk", src: "audio/ponks.mp3" },
+            { key: "ego", title: "egoism is when no", src: "audio/ego.mp3", image:"images/maxwhenno.jpg" },
+            { key: "rus", title: "ruski is when this song", src: "audio/kambing.mp3", image:"images/sikambing.jpg" }
         ];
 
         // Load saved volumes from localStorage (defaults: SFX 100%, Music 50%)
@@ -236,10 +254,18 @@
         let bgmVolume = parseFloat(localStorage.getItem("bgmVol") ?? "0.5");
         let currentTrackIndex = 0;
         let pendingTrack = null;
+        const secretTrackKey = "secret";
+
+
 
         const bgmPlayer = new Audio();
         bgmPlayer.loop = true;
         bgmPlayer.volume = bgmVolume;
+
+
+        window.addEventListener("hashchange", () => {
+            updateMusicVisual(bgmTracks[currentTrackIndex]);
+        });
 
         function playSFX(name) {
             const src = sfxFiles[name];
@@ -250,24 +276,43 @@
             sound.play().catch(() => {});
         }
 
+        function updateMusicVisual(track) {
+            const visual = document.getElementById("musicVisual");
+            const visualImage = document.getElementById("musicVisualImage");
+
+            if (!visual || !visualImage) return;
+
+            if (window.location.hash !== "#options" || !track.image) {
+                visual.style.display = "none";
+                return;
+            }
+
+            visual.style.display = "block";
+            visualImage.src = track.image;
+            visualImage.classList.toggle("spinning", !!track.spin);
+        }
+
+
         function playBGM(index = currentTrackIndex) {
             currentTrackIndex = index % bgmTracks.length;
             const track = bgmTracks[currentTrackIndex];
+            updateMusicVisual(track);
 
             if (!bgmPlayer.src.endsWith(track.src)) {
                 bgmPlayer.src = track.src;
             }
+
             bgmPlayer.volume = bgmVolume;
+
 
             bgmPlayer.play().then(() => {
                 pendingTrack = null;
-            }).catch(() => {
-                pendingTrack = currentTrackIndex;
-            });
+        }).catch(() => {
+             pendingTrack = currentTrackIndex;
+         });
 
             return track;
         }
-
         function nextBGM() {
             return playBGM(currentTrackIndex + 1);
         }
@@ -384,7 +429,13 @@
                         name: "Paman Buas",
                         sprite: "images/girl-peace-sign.png",
                         size: "120vh",
-                        text: "adslkjasdw"
+                        text: "Hiiiiiiii :>"
+                    },
+                     {
+                        name: "Paman Buas",
+                        sprite: "images/girl-peace-sign.png",
+                        size: "120vh",
+                        text: "Go fuck yourself kys *n word hard r*"
                     },
                     {
                         name: "Paman Buas",
@@ -446,7 +497,7 @@
                     },
                     {
                         name: "Kein",
-                        text: "ok go back"
+                        text: "ok fuck you kys"
                     }
                 ]
             }
@@ -621,13 +672,43 @@
         });
 
         window.addEventListener("hashchange", () => {
-            if (window.location.hash === "#story") {
-                showLine(currentLine);
-            }
+            updateMusicVisual(bgmTracks[currentTrackIndex]);
         });
     });
 </script>
 
+// JUMPSCARE TRANSITION
+<script>
+const learnMoreButton = document.getElementById("learnMoreButton");
+const jumpscare = document.getElementById("jumpscare");
+
+learnMoreButton.addEventListener("click", function(event) {
+    event.preventDefault();
+
+    // Move to About Us first
+    window.location.hash = "LearnMore";
+
+    // Wait briefly for the section to appear
+    setTimeout(function() {
+        jumpscare.style.display = "flex";
+        jumpscare.classList.remove("shrinking");
+
+        // Restart animation
+        void jumpscare.offsetWidth;
+
+        // Start the 3-second delay + 3-second animation
+        jumpscare.classList.add("shrinking");
+
+    window.addEventListener("hashchange", function() {
+        if (window.location.hash !== "#LearnMore") {
+         jumpscare.style.display = "none";
+         jumpscare.classList.remove("shrinking");
+    }
+});
+
+    }, 100);
+});
+</script>
 
 <!-- CAMERA -->
 <script type="module">
